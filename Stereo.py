@@ -12,7 +12,7 @@ class Stereo:
         self.left = np.asarray(self.leftImage)
         self.right = np.asarray(self.rightImage)
         
-    def match(self,kernel):
+    def match(self,kernel,tp):
         print("calculating disparity matrix for w = ",kernel)
         w, h = self.leftImage.size  # assume that both images are same size   
         
@@ -41,9 +41,8 @@ class Stereo:
                         for u in range(-kernel_half, kernel_half):
                             # iteratively sum the sum of squared differences value for this block
                             # left[] and right[] are arrays of uint8, so converting them to int saves
-                            # potential overflow, and executes a lot faster 
-                            ssd_temp = int(self.left[y+v, x+u]) - int(self.right[y+v, (x+u) - offset])  
-                            ssd += ssd_temp * ssd_temp              
+                            # potential overflow, and executes a lot faster   
+                            ssd += self.cal_error(tp,int(self.left[y+v, x+u]),int(self.right[y+v, (x+u) - offset]))
                     
                     # if this value is smaller than the previous ssd at this block
                     # then it's theoretically a closer match. Store this value against
@@ -56,3 +55,8 @@ class Stereo:
                 depth[y, x] = best_offset * offset_adjust
         print()
         return depth
+
+    def cal_error(self,tp,lf,rt):
+        if tp == 1:
+            return (lf - rt) * (lf - rt)
+        return abs(lf - rt)
