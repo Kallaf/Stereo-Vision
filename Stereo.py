@@ -83,35 +83,38 @@ class Stereo:
             #dynamic programming
             for i in range(0,w):
                 for j in range(0,w):
-                    if i and j:
-                        dp[i][j] = dp[i-1][j-1] + self.dij(row,i,j)
-                        path[i][j] = 1
-                    if i and not j:
-                        dp[i][j] = dp[i-1][j] + 1
-                        path[i][j] = 2
-                    if j and not i:
-                        dp[i][j] = dp[i][j-1] + 1
-                        path[i][j] = 3
-                    
-                    if i and dp[i-1][j] + 1 < dp[i][j]: 
-                        dp[i][j] = dp[i-1][j] + 1
-                        path[i][j] = 2
-                    if j and dp[i][j-1] + 1 < dp[i][j]:
-                        dp[i][j] = dp[i][j-1] + 1
-                        path[i][j] = 3
-            
+                    if i or j:
+                        if i and j:
+                            dp[i][j] = dp[i-1][j-1] + self.dij(row,i,j)
+                            path[i][j] = 1
+    
+                            if dp[i-1][j] + 1 < dp[i][j]: 
+                                dp[i][j] = dp[i-1][j] + 1
+                                path[i][j] = 2
+                            
+                            if dp[i][j-1] + 1 < dp[i][j]:
+                                dp[i][j] = dp[i][j-1] + 1
+                                path[i][j] = 3
+                        elif i:
+                            dp[i][j] = dp[i-1][j] + 1
+                            path[i][j] = 2
+                        else:
+                            dp[i][j] = dp[i][j-1] + 1
+                            path[i][j] = 3
+                        
             #backtracking
             i = j = w-1
-            while i >= 0 or j >= 0:
+            while i or j:
                 if path[i][j] == 1:
-                    i-=1
-                    j-=1
                     depth[row,i] = abs(i-j)
-                elif path[i][j] == 2:
                     i-=1
-                    depth[row,i] = abs(i-j) + 1
-                else:
                     j-=1
-                    depth[row,i] = abs(i-j) - 1
+                elif path[i][j] == 2:
+                    depth[row,i] = abs(i-j) + 1
+                    i-=1
+                elif path[i][j] == 3:
+                    j-=1
+                else:
+                    print(i,j,path[i][j])
         print()
         return depth
