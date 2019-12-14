@@ -60,3 +60,58 @@ class Stereo:
         if tp == 1:
             return (lf - rt) * (lf - rt)
         return abs(lf - rt)
+
+    def dij(self,row,i,j):
+        sigma = 2
+        return (self.left[row, i] - self.right[row,j])**2 / sigma**2
+
+    def match_dp(self):
+        print("calculating disparity matrix with dynamic programming ")
+        w, h = self.leftImage.size  # assume that both images are same size   
+        
+        # Depth (or disparity) map
+        depth = np.zeros((w, h), np.uint8)
+        depth.shape = h, w
+        for row in range(0,h):
+            print(".", end="", flush=True)  # let the user know that something is happening (slowly!)
+            
+            dp = np.zeros((w, w), np.uint8)
+            path = np.zeros((w, w), np.uint8)
+         
+            dp[0,0] = self.dij(row,0,0)
+
+            #dynamic programming
+            for i in range(0,w):
+                for j in range(0,w):
+                    if i and j:
+                        dp[i][j] = dp[i-1][j-1] + self.dij(row,i,j)
+                        path[i][j] = 1
+                    if i and not j:
+                        dp[i][j] = dp[i-1][j] + 1
+                        path[i][j] = 2
+                    if j and not i:
+                        dp[i][j] = dp[i][j-1] + 1
+                        path[i][j] = 3
+                    
+                    if i and dp[i-1][j] + 1 < dp[i][j]: 
+                        dp[i][j] = dp[i-1][j] + 1
+                        path[i][j] = 2
+                    if j and dp[i][j-1] + 1 < dp[i][j]:
+                        dp[i][j] = dp[i][j-1] + 1
+                        path[i][j] = 3
+            
+            #backtracking
+            i = j = w-1
+            while i >= 0 or j >= 0:
+                if path[i][j] == 1:
+                    i-=1
+                    j-=1
+                    depth[row,i] = abs(i-j)
+                elif path[i][j] == 2:
+                    i-=1
+                    depth[row,i] = abs(i-j) + 1
+                else:
+                    j-=1
+                    depth[row,i] = abs(i-j) - 1
+        print()
+        return depth
