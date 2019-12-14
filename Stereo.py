@@ -72,7 +72,7 @@ class Stereo:
         # Depth (or disparity) map
         depth = np.zeros((w, h), np.uint8)
         depth.shape = h, w
-        for row in range(0,h):
+        for row in range(0,h//2):
             print(".", end="", flush=True)  # let the user know that something is happening (slowly!)
             
             dp = np.zeros((w, w), np.uint8)
@@ -110,9 +110,11 @@ class Stereo:
                     i-=1
                     j-=1
                 elif path[i][j] == 2:
-                    depth[row,i] = abs(i-j) + 1
+                    #depth[row,i] = abs(i-j) + 1
+                    depth[row,i] = 0
                     i-=1
                 elif path[i][j] == 3:
+                    #depth[row,i] = abs(i-j) - 1
                     j-=1
                 else:
                     print(i,j,path[i][j])
